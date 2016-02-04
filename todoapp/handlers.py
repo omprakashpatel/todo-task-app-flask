@@ -1,9 +1,9 @@
 
-from todoapp.models import Task
+from todoapp.models import Task, Tag
 
-def crate_task(title, desc, tags, **kwargs):
+def create_task(title, desc, tags, **kwargs):
 	"""
-	Handler is FOr crating Task
+		Handler is FOr creating Task
 	"""
 	if isinstance(title, list):
 		title = title[0]
@@ -13,6 +13,8 @@ def crate_task(title, desc, tags, **kwargs):
 		tags = tags[0]
 	if tags:
 		tags = map(lambda x: x.strip(), tags.split(','))
+		for _tag in tags:
+			create_tag(_tag)
 
 	try:
 		_task = Task(title=title, desc=desc, tags=tags)
@@ -57,7 +59,35 @@ def update_task(task_id, title, desc, tags=[], **kwargs):
 		task.desc = desc
 		task.tags = tags
 		task.save()
-
 	except Exception, e:
 		raise e
 	return "Updated"
+
+
+# ======================================
+
+def create_tag(tag):
+	try:
+		_tag = Tag()
+		_tag.id = tag
+		_tag.save()
+	except Exception, e:
+		print str(e)
+	return _tag.id
+
+
+def get_all_tags():
+	return [_tag.id for _tag in Tag.objects]
+
+
+def search_tag(tag):
+	if isinstance(tag, list):
+		tag = tag[0]
+	task = Task.objects.search_text(tag)
+	tasks = []
+	for _task in task:
+		tasks.append({'id': _task.id,
+					'title': _task.title,
+					'desc': _task.desc,
+					'tags': _task.tags})
+	return tasks
